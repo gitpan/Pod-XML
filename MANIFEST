@@ -1,5 +1,7 @@
 Changes
+README
 Makefile.PL
 MANIFEST
 XML.pm
 t/01basic.t
+pod2xml
