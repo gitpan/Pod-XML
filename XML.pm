@@ -1,4 +1,4 @@
-# $Id: XML.pm,v 1.2 2000/11/28 15:36:22 matt Exp $
+# $Id: XML.pm,v 1.3 2000/12/05 19:03:43 matt Exp $
 
 package Pod::XML;
 use strict;
@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION %head2sect %xmlchars %HTML_Escapes);
 use Pod::Parser;
 @ISA = ('Pod::Parser');
 
-$VERSION = '0.91';
+$VERSION = '0.92';
 
 %head2sect = (
     1 => "sect1",
@@ -20,6 +20,7 @@ $VERSION = '0.91';
     '&' => '&amp;',
     '<' => '&lt;',
     '>' => '&gt;',
+    '"' => '&quot;',
 );
 
 %HTML_Escapes = (
@@ -97,35 +98,45 @@ $VERSION = '0.91';
 
 sub xmlescape {
     my $text = shift;
-    $text =~ s/([&<>])/$xmlchars{$1}/eg;
+    $text =~ s/([&<>"])/$xmlchars{$1}/eg;
     return $text;
+}
+
+sub xml_output {
+    my ($parser, @strings) = @_;
+    if ($parser->{send_to_string}) {
+        $parser->{xml_string} .= join('', @strings);
+    }
+    else {
+        my $fh = $parser->output_handle();
+        print $fh @strings;
+    }
 }
 
 sub begin_pod {
     my ($parser) = @_;
-    my $fh = $parser->output_handle();
 
     $parser->{headlevel} = 0;
     $parser->{seentitle} = 0;
     $parser->{closeitem} = 0;
     $parser->{waitingfortitle} = 0;
 
-    print $fh <<EOT;
+    $parser->xml_output(<<EOT);
 <?xml version='1.0' encoding='iso-8859-1'?>
 <pod xmlns="http://axkit.org/ns/2000/pod2xml">
 EOT
-    }
+}
 
-    sub end_pod {
+sub end_pod {
     my ($parser) = @_;
     my $fh = $parser->output_handle();
 
     while ($parser->{headlevel}) {
-        print $fh "</$head2sect{$parser->{headlevel}}>\n";
+        $parser->xml_output("</$head2sect{$parser->{headlevel}}>\n");
         $parser->{headlevel}--;
     }
 
-    print $fh <<EOT;
+    $parser->xml_output(<<EOT);
 </pod>
 EOT
 }
@@ -139,56 +150,55 @@ sub command {
 
     if ($command =~ /^head(\d+)/) {
         my $headlevel = $1;
-        if (!$parser->{seentitle}) {
-            $parser->{seentitle}++;
-            print $fh "<head>\n\t<title>";
+        if (!$parser->{title}) {
+            $parser->xml_output("<head>\n\t<title>");
             if ($paragraph eq 'NAME') {
-                $parser->{waitingfortitle} = 1;
                 return;
             }
-            print $fh xmlescape($paragraph), "</title>\n</head>\n";
+            $parser->{title} = xmlescape($paragraph);
+            $parser->xml_output(xmlescape($paragraph), "</title>\n</head>\n");
             return;
         }
 
         if ($headlevel <= $parser->{headlevel}) {
             while ($headlevel <= $parser->{headlevel}) {
-                print $fh "</$head2sect{$parser->{headlevel}}>\n";
+                $parser->xml_output("</$head2sect{$parser->{headlevel}}>\n");
                 $parser->{headlevel}--;
             }
         }
 
 	while ($headlevel > ($parser->{headlevel} + 1)) {
 		$parser->{headlevel}++;
-		print $fh "<$head2sect{$parser->{headlevel}}>\n";
+		$parser->xml_output("<$head2sect{$parser->{headlevel}}>\n");
 	}
 
         $parser->{headlevel} = $headlevel;
-        print $fh "<$head2sect{$headlevel}>\n";
-        print $fh "<title>", xmlescape($paragraph), "</title>\n";
+        $parser->xml_output("<$head2sect{$headlevel}>\n",
+                "<title>", xmlescape($paragraph), "</title>\n");
     }
     elsif ($command eq "over") {
         if ($parser->{closeitem}) {
-            print $fh "</item>\n";
+            $parser->xml_output("</item>\n");
             $parser->{closeitem} = 0;
         }
-        print $fh "<list>\n";
+        $parser->xml_output("<list>\n");
     }
     elsif ($command eq "back") {
         if ($parser->{closeitem}) {
-            print $fh "</item>\n";
+            $parser->xml_output("</item>\n");
             $parser->{closeitem} = 0;
         }
-        print $fh "</list>\n";
+        $parser->xml_output("</list>\n");
     }
     elsif ($command eq "item") {
         if ($parser->{closeitem}) {
-            print $fh "</item>\n";
+            $parser->xml_output("</item>\n");
             $parser->{closeitem} = 0;
         }
-        print $fh "<item>";
+        $parser->xml_output("<item>");
         if ($paragraph ne '*') {
             $paragraph =~ s/^\*\s+//;
-            print $fh "<itemtext>", xmlescape($paragraph), "</itemtext>\n";
+            $parser->xml_output("<itemtext>", xmlescape($paragraph), "</itemtext>\n");
         }
         $parser->{closeitem}++;
     }
@@ -197,11 +207,16 @@ sub command {
 sub verbatim {
     my ($parser, $paragraph) = @_;
     my $fh = $parser->output_handle();
-    $paragraph =~ s/^\s*//;
-    $paragraph =~ s/\s*$//;
-    return unless length $paragraph;
-    $paragraph =~ s/\]\]>/\]\]>\]\]&gt;<!\[CDATA\[/g;
-    print $fh "<verbatim><![CDATA[\n", $paragraph, "\n]]></verbatim>\n";
+    
+    if ($paragraph =~ s/^(\s*)//) {
+        my $indent = $1;
+
+        $paragraph =~ s/\s*$//;
+        return unless length $paragraph;
+        $paragraph =~ s/^$indent//mg; # un-indent
+        $paragraph =~ s/\]\]>/\]\]>\]\]&gt;<!\[CDATA\[/g;
+        $parser->xml_output("<verbatim><![CDATA[\n", $paragraph, "\n]]></verbatim>\n");
+    }
 }
 
 sub textblock {
@@ -212,19 +227,61 @@ sub textblock {
     $paragraph =~ s/\s*$//;
     
     my $text = $parser->interpolate($paragraph);
+    $text = uri_find($text);
     $text = xmlescape($text);
-    $text =~ s/\{(\/?)tag:(\w+)\}/<$1$2>/g;
+    $text =~ s/\{(\/?)tag:(.*?)\}/<$1$2>/g;
     $text =~ s/\{code:(\d+)\}/&#$1/g;
     
-    if ($parser->{waitingfortitle}) {
-        $parser->{waitingfortitle} = 0;
-        print $fh $text, "</title>\n</head>\n";
+    if (!$parser->{title}) {
+        $parser->{title} = $text;
+        $parser->xml_output($text, "</title>\n</head>\n");
     }
     else {
-        print $fh "<para>\n";
-        print $fh $text;
-        print $fh "\n</para>\n";
+        if ($parser->{headlevel} == 0) {
+            $parser->xml_output("<sect1>\n<title>", $parser->{title}, "</title>\n");
+            $parser->{headlevel}++;
+        }
+        $parser->xml_output("<para>\n", $text, "\n</para>\n");
     }
+}
+
+# Code from the Perl Cookbook
+my $urls = '(https|http|telnet|gopher|file|wais|ftp|mailto)';
+my $ltrs = '\w';
+my $gunk = '/#~:.?+=&%@!\-';
+my $punc = '.:?\-';
+my $any = "${ltrs}${gunk}${punc}";
+
+sub uri_find {
+    my ($text) = @_;
+    
+    my $new;
+
+    while (
+           $text =~ m{
+                       \G       # anchor to last match place
+                       (.*?)    # catch stuff before match in $1
+                       \b       # start at word boundary
+                       (        # BEGIN $2
+                       $urls :  # http:
+                       [$any]+? # followed by 1 or more allowed charact
+                       )        # END $2
+                       (?=      # look ahead after $2
+                       [$punc]* #  for 0 or more punctuation characters
+                       [^$any]  #  followed by a non-URL character
+                       | $      #  or alternatively the end of the html
+                       )        # end of look ahead
+                    }igsoxc
+          )
+    {
+        my ($pre, $url) = ($1, $2);
+        $new .= $pre;
+        $new .= "\{tag:xlink uri='$url'\}$url\{/tag:xlink\}";
+    }
+
+    $text =~ /\G(.*)/gcs;
+    $new .= $1 if defined $1;
+    return $new;
 }
 
 sub interior_sequence {
@@ -260,67 +317,37 @@ sub interior_sequence {
         # plus any of the above can be prefixed with text| to use
         # that text as the link text.
         
-       # THE FOLLOWING IS THE CODE FROM Pod::Text.
-       # I'm keeping it here for the regexps so that I know I'm at
-       # least parsing this stuff right.
-       
-       # Can you say "ugh", ladies and gents?
-       
-# 	# LREF: a la HREF L<show this text|man/section>
-# 	s:L<([^|>]+)\|[^>]+>:$1:g;
-# 
-# 	# LREF: a manpage(3f)
-# 	s:L<([a-zA-Z][^\s\/]+)(\([^\)]+\))?>:the $1$2 manpage:g;
-# 	# LREF: an =item on another manpage
-# 	s{
-# 	    L<
-# 		([^/]+)
-# 		/
-# 		(
-# 		    [:\w]+
-# 		    (\(\))?
-# 		)
-# 	    >
-# 	} {the "$2" entry in the $1 manpage}gx;
-# 
-# 	# LREF: an =item on this manpage
-# 	s{
-# 	   ((?:
-# 	    L<
-# 		/
-# 		(
-# 		    [:\w]+
-# 		    (\(\))?
-# 		)
-# 	    >
-# 	    (,?\s+(and\s+)?)?
-# 	  )+)
-# 	} { internal_lrefs($1) }gex;
-# 
-# 	# LREF: a =head2 (head1?), maybe on a manpage, maybe right here
-# 	# the "func" can disambiguate
-# 	s{
-# 	    L<
-# 		(?:
-# 		    ([a-zA-Z]\S+?) / 
-# 		)?
-# 		"?(.*?)"?
-# 	    >
-# 	}{
-# 	    do {
-# 		$1 	# if no $1, assume it means on this page.
-# 		    ?  "the section on \"$2\" in the $1 manpage"
-# 		    :  "the section on \"$2\""
-# 	    }
-# 	}sgex;
-        
-        my ($text, $link, $file);
+        my $text = $seq_argument;
         if ($seq_argument =~ /^([^|]+)\|(.*)$/) {
             $text = $1;
             $seq_argument = $2;
         }
         
-        return "\{tag:link\}$seq_argument\{\/tag:link\}";
+        $seq_argument =~ s/^\///; # strip leading slash
+        
+        if ($seq_argument =~ /^(.*?)\/(.*)$/) {
+            # name/ident or name/"sect"
+            my $ident_or_sect = $2;
+            $seq_argument = $1;
+            
+            if ($ident_or_sect =~ /^\"(.*)\"$/) {
+                my $sect = $1;
+                $sect = substr($sect, 0, 30);
+                $sect =~ s/\s/_/g;
+                $seq_argument .= '#' . $sect;
+            }
+            else {
+                $seq_argument .= '#' . $ident_or_sect;
+            }
+        }
+        elsif ($seq_argument =~ /^\"(.*)\"$/) {
+            my $sect = $1;
+            $sect = substr($sect, 0, 30);
+            $sect =~ s/\s/_/g;
+            $seq_argument = '#' . $sect;
+        }
+        
+        return "\{tag:link xref='$seq_argument'\}$text\{\/tag:link\}";
     }
     elsif ($seq_command eq 'E') {
         return $HTML_Escapes{$seq_argument};

@@ -1,5 +1,11 @@
 Revision history for Perl extension Pod::XML.
 
+0.92  Wed Dec 06 2000
+    - Many bug fixes
+    - Handle L<> better
+    - Extract http, https, ftp, mailto and other links
+    - Remove whitespace at beginning of verbatim sections
+
 0.01  Mon Nov 27 10:33:39 2000
 	- original version; created by h2xs 1.19
 
