@@ -1,5 +1,9 @@
 Revision history for Perl extension Pod::XML.
 
+0.93  Wed Jan 10 2000
+    - interpolate text in command paragraphs
+    - fixed URL parsing under 5.005
+
 0.92  Wed Dec 06 2000
     - Many bug fixes
     - Handle L<> better

@@ -1,4 +1,4 @@
-# $Id: XML.pm,v 1.3 2000/12/05 19:03:43 matt Exp $
+# $Id: XML.pm,v 1.5 2001/01/10 14:08:47 matt Exp $
 
 package Pod::XML;
 use strict;
@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION %head2sect %xmlchars %HTML_Escapes);
 use Pod::Parser;
 @ISA = ('Pod::Parser');
 
-$VERSION = '0.92';
+$VERSION = '0.93';
 
 %head2sect = (
     1 => "sect1",
@@ -147,6 +147,12 @@ sub command {
 
     $paragraph =~ s/\s*$//;
     $paragraph =~ s/^\s*//;
+    
+    $paragraph = $parser->interpolate($paragraph);
+    $paragraph = uri_find($paragraph);
+    $paragraph = xmlescape($paragraph);
+    $paragraph =~ s/\{(\/?)tag:(.*?)\}/<$1$2>/g;
+    $paragraph =~ s/\{code:(\d+)\}/&#$1/g;
 
     if ($command =~ /^head(\d+)/) {
         my $headlevel = $1;
@@ -155,8 +161,8 @@ sub command {
             if ($paragraph eq 'NAME') {
                 return;
             }
-            $parser->{title} = xmlescape($paragraph);
-            $parser->xml_output(xmlescape($paragraph), "</title>\n</head>\n");
+            $parser->{title} = $paragraph;
+            $parser->xml_output($paragraph, "</title>\n</head>\n");
             return;
         }
 
@@ -174,7 +180,7 @@ sub command {
 
         $parser->{headlevel} = $headlevel;
         $parser->xml_output("<$head2sect{$headlevel}>\n",
-                "<title>", xmlescape($paragraph), "</title>\n");
+                "<title>", $paragraph, "</title>\n");
     }
     elsif ($command eq "over") {
         if ($parser->{closeitem}) {
@@ -198,7 +204,7 @@ sub command {
         $parser->xml_output("<item>");
         if ($paragraph ne '*') {
             $paragraph =~ s/^\*\s+//;
-            $parser->xml_output("<itemtext>", xmlescape($paragraph), "</itemtext>\n");
+            $parser->xml_output("<itemtext>", $paragraph, "</itemtext>\n");
         }
         $parser->{closeitem}++;
     }
@@ -249,7 +255,7 @@ sub textblock {
 my $urls = '(https|http|telnet|gopher|file|wais|ftp|mailto)';
 my $ltrs = '\w';
 my $gunk = '/#~:.?+=&%@!\-';
-my $punc = '.:?\-';
+my $punc = '.:?\-!,';
 my $any = "${ltrs}${gunk}${punc}";
 
 sub uri_find {
@@ -268,10 +274,12 @@ sub uri_find {
                        )        # END $2
                        (?=      # look ahead after $2
                        [$punc]* #  for 0 or more punctuation characters
+                       (
                        [^$any]  #  followed by a non-URL character
-                       | $      #  or alternatively the end of the html
+                       | \Z     #  or alternatively the end of the html
+                       )
                        )        # end of look ahead
-                    }igsoxc
+                    }igcsox
           )
     {
         my ($pre, $url) = ($1, $2);
