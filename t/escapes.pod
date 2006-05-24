@@ -1,0 +1,4 @@
+=head1 Random test of character escaping
+
+This is a test to see whether or not E<quot>specialE<quot> characters & (or
+should the be E<amp>?) E<apos>quotableE<apos> characters are escaped propery!

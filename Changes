@@ -1,15 +1,30 @@
 Revision history for Perl extension Pod::XML.
 
+Wed May 24 2006
+  - New maintainer is Matt Wilson <matt@mattsscripts.co.uk>
+  - Finished off linking (L<>) code
+  - Added new unit test for links
+  - Fixed up escape sequencing code (E<>)
+  - Added new unit test for escape sequences
+  - Cleaned up code a bit
+
+Tues May 9 2006
+  - added support for scheme:/ links and associated text
+  - fixed L</sec> to link to #sec rather than just sec.
+
+0.94  Fri Apr 28 2006
+  - added a fix so File::* modules don't get picked up as hyperlinks in L<>
+    directives
+
 0.93  Wed Jan 10 2000
-    - interpolate text in command paragraphs
-    - fixed URL parsing under 5.005
+  - interpolate text in command paragraphs
+  - fixed URL parsing under 5.005
 
 0.92  Wed Dec 06 2000
-    - Many bug fixes
-    - Handle L<> better
-    - Extract http, https, ftp, mailto and other links
-    - Remove whitespace at beginning of verbatim sections
+  - Many bug fixes
+  - Handle L<> better
+  - Extract http, https, ftp, mailto and other links
+  - Remove whitespace at beginning of verbatim sections
 
 0.01  Mon Nov 27 10:33:39 2000
-	- original version; created by h2xs 1.19
-
+  - original version; created by h2xs 1.19

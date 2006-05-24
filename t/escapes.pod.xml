@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<pod xmlns="http://axkit.org/ns/2000/pod2xml">
+<head>
+	<title>Random test of character escaping</title>
+</head>
+<sect1>
+<title>Random test of character escaping</title>
+<para>
+This is a test to see whether or not &quot;special&quot; characters &amp; (or
+should the be &amp;?) &apos;quotable&apos; characters are escaped propery!
+</para>
+</sect1>
+</pod>

@@ -2,6 +2,12 @@ Changes
 README
 Makefile.PL
 MANIFEST
-XML.pm
+lib/Pod/XML.pm
 t/01basic.t
-pod2xml
+t/02links.t
+t/links.pod
+t/links.pod.xml
+t/03escapes.t
+t/escapes.pod
+t/escapes.pod.xml
+scripts/pod2xml

@@ -25,10 +25,15 @@ L<Pod::Parser>, L<Pod::XML>
 
 use Pod::XML;
 
-my $parser = Pod::XML->new();
-if (@ARGV) {
-    $parser->parse_from_file(@ARGV);
+print "Using Pod::XML version $Pod::XML::VERSION.\n";
+
+my $parser = Pod::XML->new ();
+
+if ( @ARGV )
+{
+  $parser->parse_from_file ( @ARGV );
 }
-else {
-    $parser->parse_from_filehandle(\*STDIN);
+else
+{
+  $parser->parse_from_filehandle ( \*STDIN );
 }
