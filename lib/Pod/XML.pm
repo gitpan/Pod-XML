@@ -1,6 +1,6 @@
 package Pod::XML;
 
-# $Id: XML.pm 13 2006-05-24 19:19:54Z matt $
+# $Id: XML.pm 19 2006-05-28 11:51:33Z matt $
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ use Pod::Parser;
 
 @ISA = ( 'Pod::Parser' );
 
-$VERSION = '0.95';
+$VERSION = '0.96';
 
 # I'm not sure why Matt Sergeant did this in this way but I'll leave it for
 # the time being

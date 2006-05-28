@@ -1,12 +1,20 @@
 Revision history for Perl extension Pod::XML.
 
-Wed May 24 2006
+Sat May 27 2006
+  - Unit tests now use Test::More and Test::File::Contents.
+  - Moved unit tests to use File::Basename and dirname ( $0 ) to ensure we're
+    in the t/ directory
+  - Added IO::Scalar to prerequisites list, along with Test::More and
+    Test::File::Contents
+
+Wed May 24 2006 
   - New maintainer is Matt Wilson <matt@mattsscripts.co.uk>
   - Finished off linking (L<>) code
   - Added new unit test for links
   - Fixed up escape sequencing code (E<>)
   - Added new unit test for escape sequences
   - Cleaned up code a bit
+  - Released version 0.95
 
 Tues May 9 2006
   - added support for scheme:/ links and associated text

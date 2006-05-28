@@ -1,15 +1,17 @@
 #!/usr/local/bin/perl
 
-chdir ( $1 ) if ( $0 =~ m/(.*)(\\|\/)(.*)/ );
+use File::Basename;
 
-# change into the t/ directory
-use Test::Assertions qw(test);
-use Pod::XML;
-use IO::Scalar;
+chdir dirname ( $0 );
 
-plan tests => 2;
+use Test::More tests => 4;
 
-ASSERT ( $Pod::XML::VERSION, "Loaded Pod::XML version $Pod::XML::VERSION." );
+BEGIN
+{
+  use_ok ( 'IO::Scalar' );
+  use_ok ( 'Test::File::Contents' );
+  use_ok ( "Pod::XML" );
+}
 
 my $parser = new Pod::XML ();
 my $xml = '';
@@ -21,4 +23,4 @@ $parser->parse_from_file ( "links.pod" );
 
 untie *STDOUT;
 
-ASSERT ( EQUALS_FILE ( $xml, "links.pod.xml" ), "XML generated correctly." );
+file_contents_is ( 'links.pod.xml', $xml, 'XML generated correctly' );
