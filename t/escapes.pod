@@ -2,3 +2,10 @@
 
 This is a test to see whether or not E<quot>specialE<quot> characters & (or
 should the be E<amp>?) E<apos>quotableE<apos> characters are escaped propery!
+
+Aacute should be C1 - E<Aacute>
+
+HEX E<0x201E>, should be E<amp>#x201E;
+HEX E<0xBB>, should be E<amp>#xBB;
+OCTAL E<075>, should be E<amp>#x3D;
+DECIMAL E<181>, should be E<amp>#xB5;

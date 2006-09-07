@@ -4,6 +4,8 @@ use File::Basename;
 
 chdir dirname ( $0 );
 
+use lib qw(lib ../lib);
+
 use Test::More tests => 4;
 
 BEGIN

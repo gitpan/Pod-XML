@@ -2,6 +2,8 @@
 
 use File::Basename;
 
+use lib qw(lib ../lib);
+
 chdir dirname ( $0 );
 
 use Test::More tests => 4;

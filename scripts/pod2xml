@@ -25,8 +25,6 @@ L<Pod::Parser>, L<Pod::XML>
 
 use Pod::XML;
 
-print "Using Pod::XML version $Pod::XML::VERSION.\n";
-
 my $parser = Pod::XML->new ();
 
 if ( @ARGV )

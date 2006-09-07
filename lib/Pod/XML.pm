@@ -1,6 +1,6 @@
 package Pod::XML;
 
-# $Id: XML.pm 19 2006-05-28 11:51:33Z matt $
+# $Id: XML.pm 24 2006-09-07 19:17:17Z matt $
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ use Pod::Parser;
 
 @ISA = ( 'Pod::Parser' );
 
-$VERSION = '0.96';
+$VERSION = '0.97';
 
 # I'm not sure why Matt Sergeant did this in this way but I'll leave it for
 # the time being
@@ -25,74 +25,73 @@ $VERSION = '0.96';
 # NOTE that ampersand is not included here as when escaping we MUST do
 # ampersand first!
 %HTML_Escapes = (
-  # '&'     =>  'amp',        #   ampersand
-  '<'     =>  'lt',         #   left chevron, less-than
-  '>'     =>  'gt',         #   right chevron, greater-than
-  '"'     =>  'quot',       #   double quote
-  "\xC1"  =>  "Aacute",     #   capital A, acute accent
-  "\xE1"  =>  "aacute",     #   small a, acute accent
-  "\xC2"  =>  "Acirc",      #   capital A, circumflex accent
-  "\xE2"  =>  "acirc",      #   small a, circumflex accent
-  "\xC6"  =>  "AElig",      #   capital AE diphthong (ligature)
-  "\xE6"  =>  "aelig",      #   small ae diphthong (ligature)
-  "\xC0"  =>  "Agrave",     #   capital A, grave accent
-  "\xE0"  =>  "agrave",     #   small a, grave accent
-  "\xC5"  =>  "Aring",      #   capital A, ring
-  "\xE5"  =>  "aring",      #   small a, ring
-  "\xC3"  =>  "Atilde",     #   capital A, tilde
-  "\xE3"  =>  "atilde",     #   small a, tilde
-  "\xC4"  =>  "Auml",       #   capital A, dieresis or umlaut mark
-  "\xE4"  =>  "auml",       #   small a, dieresis or umlaut mark
-  "\xC7"  =>  "Ccedil",     #   capital C, cedilla
-  "\xE7"  =>  "ccedil",     #   small c, cedilla
-  "\xC9"  =>  "Eacute",     #   capital E, acute accent
-  "\xE9"  =>  "eacute",     #   small e, acute accent
-  "\xCA"  =>  "Ecirc",      #   capital E, circumflex accent
-  "\xEA"  =>  "ecirc",      #   small e, circumflex accent
-  "\xC8"  =>  "Egrave",     #   capital E, grave accent
-  "\xE8"  =>  "egrave",     #   small e, grave accent
-  "\xD0"  =>  "ETH",        #   capital Eth, Icelandic
-  "\xF0"  =>  "eth",        #   small eth, Icelandic
-  "\xCB"  =>  "Euml",       #   capital E, dieresis or umlaut mark
-  "\xEB"  =>  "euml",       #   small e, dieresis or umlaut mark
-  "\xCD"  =>  "Iacute",     #   capital I, acute accent
-  "\xED"  =>  "iacute",     #   small i, acute accent
-  "\xCE"  =>  "Icirc",      #   capital I, circumflex accent
-  "\xEE"  =>  "icirc",      #   small i, circumflex accent
-  "\xCD"  =>  "Igrave",     #   capital I, grave accent
-  "\xED"  =>  "igrave",     #   small i, grave accent
-  "\xCF"  =>  "Iuml",       #   capital I, dieresis or umlaut mark
-  "\xEF"  =>  "iuml",       #   small i, dieresis or umlaut mark
-  "\xD1"  =>  "Ntilde",     #   capital N, tilde
-  "\xF1"  =>  "ntilde",     #   small n, tilde
-  "\xD3"  =>  "Oacute",     #   capital O, acute accent
-  "\xF3"  =>  "oacute",     #   small o, acute accent
-  "\xD4"  =>  "Ocirc",      #   capital O, circumflex accent
-  "\xF4"  =>  "ocirc",      #   small o, circumflex accent
-  "\xD2"  =>  "Ograve",     #   capital O, grave accent
-  "\xF2"  =>  "ograve",     #   small o, grave accent
-  "\xD8"  =>  "Oslash",     #   capital O, slash
-  "\xF8"  =>  "oslash",     #   small o, slash
-  "\xD5"  =>  "Otilde",     #   capital O, tilde
-  "\xF5"  =>  "otilde",     #   small o, tilde
-  "\xD6"  =>  "Ouml",       #   capital O, dieresis or umlaut mark
-  "\xF6"  =>  "ouml",       #   small o, dieresis or umlaut mark
-  "\xDF"  =>  "szlig",      #   small sharp s, German (sz ligature)
-  "\xDE"  =>  "THORN",      #   capital THORN, Icelandic
-  "\xFE"  =>  "thorn",      #   small thorn, Icelandic
-  "\xDA"  =>  "Uacute",     #   capital U, acute accent
-  "\xFA"  =>  "uacute",     #   small u, acute accent
-  "\xDB"  =>  "Ucirc",      #   capital U, circumflex accent
-  "\xFB"  =>  "ucirc",      #   small u, circumflex accent
-  "\xD9"  =>  "Ugrave",     #   capital U, grave accent
-  "\xF9"  =>  "ugrave",     #   small u, grave accent
-  "\xDC"  =>  "Uuml",       #   capital U, dieresis or umlaut mark
-  "\xFC"  =>  "uuml",       #   small u, dieresis or umlaut mark
-  "\xDD"  =>  "Yacute",     #   capital Y, acute accent
-  "\xFD"  =>  "yacute",     #   small y, acute accent
-  "\xFF"  =>  "yuml",       #   small y, dieresis or umlaut mark
-  "\xAB"  =>  "lchevron",   #   left chevron (double less than)
-  "\xBB"  =>  "rchevron",   #   right chevron (double greater than)
+  '<'        =>  'lt',   #   left chevron, less-than
+  '>'        =>  'gt',   #   right chevron, greater-than
+  '"'        =>  'quot', #   double quote
+  "Aacute"   => "#xC1",  #   capital A, acute accent
+  "aacute"   => "#xE1",  #   small a, acute accent
+  "Acirc"    => "#xC2",  #   capital A, circumflex accent
+  "acirc"    => "#xE2",  #   small a, circumflex accent
+  "AElig"    => "#xC6",  #   capital AE diphthong (ligature)
+  "aelig"    => "#xE6",  #   small ae diphthong (ligature)
+  "Agrave"   => "#xC0",  #   capital A, grave accent
+  "agrave"   => "#xE0",  #   small a, grave accent
+  "Aring"    => "#xC5",  #   capital A, ring
+  "aring"    => "#xE5",  #   small a, ring
+  "Atilde"   => "#xC3",  #   capital A, tilde
+  "atilde"   => "#xE3",  #   small a, tilde
+  "Auml"     => "#xC4",  #   capital A, dieresis or umlaut mark
+  "auml"     => "#xE4",  #   small a, dieresis or umlaut mark
+  "Ccedil"   => "#xC7",  #   capital C, cedilla
+  "ccedil"   => "#xE7",  #   small c, cedilla
+  "Eacute"   => "#xC9",  #   capital E, acute accent
+  "eacute"   => "#xE9",  #   small e, acute accent
+  "Ecirc"    => "#xCA",  #   capital E, circumflex accent
+  "ecirc"    => "#xEA",  #   small e, circumflex accent
+  "Egrave"   => "#xC8",  #   capital E, grave accent
+  "egrave"   => "#xE8",  #   small e, grave accent
+  "ETH"      => "#xD0",  #   capital Eth, Icelandic
+  "eth"      => "#xF0",  #   small eth, Icelandic
+  "Euml"     => "#xCB",  #   capital E, dieresis or umlaut mark
+  "euml"     => "#xEB",  #   small e, dieresis or umlaut mark
+  "Iacute"   => "#xCD",  #   capital I, acute accent
+  "iacute"   => "#xED",  #   small i, acute accent
+  "Icirc"    => "#xCE",  #   capital I, circumflex accent
+  "icirc"    => "#xEE",  #   small i, circumflex accent
+  "Igrave"   => "#xCD",  #   capital I, grave accent
+  "igrave"   => "#xED",  #   small i, grave accent
+  "Iuml"     => "#xCF",  #   capital I, dieresis or umlaut mark
+  "iuml"     => "#xEF",  #   small i, dieresis or umlaut mark
+  "Ntilde"   => "#xD1",  #   capital N, tilde
+  "ntilde"   => "#xF1",  #   small n, tilde
+  "Oacute"   => "#xD3",  #   capital O, acute accent
+  "oacute"   => "#xF3",  #   small o, acute accent
+  "Ocirc"    => "#xD4",  #   capital O, circumflex accent
+  "ocirc"    => "#xF4",  #   small o, circumflex accent
+  "Ograve"   => "#xD2",  #   capital O, grave accent
+  "ograve"   => "#xF2",  #   small o, grave accent
+  "Oslash"   => "#xD8",  #   capital O, slash
+  "oslash"   => "#xF8",  #   small o, slash
+  "Otilde"   => "#xD5",  #   capital O, tilde
+  "otilde"   => "#xF5",  #   small o, tilde
+  "Ouml"     => "#xD6",  #   capital O, dieresis or umlaut mark
+  "ouml"     => "#xF6",  #   small o, dieresis or umlaut mark
+  "szlig"    => "#xDF",  #   small sharp s, German (sz ligature)
+  "THORN"    => "#xDE",  #   capital THORN, Icelandic
+  "thorn"    => "#xFE",  #   small thorn, Icelandic
+  "Uacute"   => "#xDA",  #   capital U, acute accent
+  "uacute"   => "#xFA",  #   small u, acute accent
+  "Ucirc"    => "#xDB",  #   capital U, circumflex accent
+  "ucirc"    => "#xFB",  #   small u, circumflex accent
+  "Ugrave"   => "#xD9",  #   capital U, grave accent
+  "ugrave"   => "#xF9",  #   small u, grave accent
+  "Uuml"     => "#xDC",  #   capital U, dieresis or umlaut mark
+  "uuml"     => "#xFC",  #   small u, dieresis or umlaut mark
+  "Yacute"   => "#xDD",  #   capital Y, acute accent
+  "yacute"   => "#xFD",  #   small y, acute accent
+  "yuml"     => "#xFF",  #   small y, dieresis or umlaut mark
+  "lchevron" => "#xAB",  #   left chevron (double less than)
+  "rchevron" => "#xBB",  #   right chevron (double greater than)
 );
 
 sub html_escape
@@ -102,12 +101,7 @@ sub html_escape
   # ampersand MUST be done first!
   $text =~ s/&/\&amp;/g;
 
-  # now go through the full list
-  while ( my ( $raw, $escaped ) = each %HTML_Escapes )
-  {
-    $text =~ s/$raw/\&$escaped;/g;
-  }
-
+  # convert other {tag:...} markers
   $text =~ s/{tag:escape ref='([^']*)'}/\&$1;/g;
 
   return $text;
@@ -119,7 +113,7 @@ sub xml_output
   
   if ( $parser->{send_to_string} )
   {
-    $parser->{xml_string} .= join('', @strings);
+    $parser->{xml_string} .= join ( '', @strings );
   }
   else
   {
@@ -151,8 +145,8 @@ sub end_pod
 
   while ( $parser->{headlevel} )
   {
-    $parser->xml_output ( "</$head2sect{$parser->{headlevel}}>\n" );
-    $parser->{headlevel}--;
+    $parser->xml_output ( "</" . $head2sect { $parser->{headlevel}-- } .
+        ">\n" );
   }
 
   $parser->xml_output(<<EOT);
@@ -194,19 +188,19 @@ sub command
     {
       while ( $headlevel <= $parser->{headlevel} )
       {
-        $parser->xml_output ( "</$head2sect{$parser->{headlevel}}>\n" );
-        $parser->{headlevel}--;
+        $parser->xml_output ( "</", $head2sect { $parser->{headlevel}-- },
+            ">\n" );
       }
     }
 
     while ( $headlevel > ( $parser->{headlevel} + 1 ) )
     {
-      $parser->{headlevel}++;
-      $parser->xml_output ( "<$head2sect{$parser->{headlevel}}>\n" );
+      $parser->xml_output ( "<", $head2sect { ++$parser->{headlevel} },
+          ">\n" );
     }
 
     $parser->{headlevel} = $headlevel;
-    $parser->xml_output ( "<$head2sect{$headlevel}>\n",
+    $parser->xml_output ( "<", $head2sect { $headlevel }, ">\n",
         "<title>", $paragraph, "</title>\n" );
   }
   elsif ( $command eq "over" )
@@ -265,7 +259,8 @@ sub verbatim
   
     $paragraph =~ s/^$indent//mg; # un-indent
     $paragraph =~ s/\]\]>/\]\]>\]\]&gt;<!\[CDATA\[/g;
-    $parser->xml_output ( "<verbatim><![CDATA[\n", $paragraph, "\n]]></verbatim>\n" );
+    $parser->xml_output ( "<verbatim><![CDATA[\n", $paragraph,
+        "\n]]></verbatim>\n" );
   }
 }
 
@@ -294,7 +289,7 @@ sub textblock
     if ( $parser->{headlevel} == 0 )
     {
       $parser->xml_output ( "<sect1>\n<title>", $parser->{title},
-        "</title>\n" );
+          "</title>\n" );
       $parser->{headlevel}++;
     }
 
@@ -311,7 +306,7 @@ sub uri_find
   my $ltrs = '\w';
   my $gunk = '/#~:.?+=&%@!\-';
   my $punc = '.:?\-!,';
-  my $any = "${ltrs}${gunk}${punc}";
+  my $any  = $ltrs . $gunk . $punc;
 
   my $new;
 
@@ -336,7 +331,7 @@ sub uri_find
   {
     my ( $pre, $url ) = ( $1, $2 );
     $new .= $pre;
-    $new .= "\{tag:xlink uri='$url'\}$url\{/tag:xlink\}";
+    $new .= "\{tag:xlink uri='" . $url . "'\}" . $url . "\{/tag:xlink\}";
   }
 
   $text =~ /\G(.*)/gcs;
@@ -352,15 +347,15 @@ sub interior_sequence
 
   if ( $seq_command eq 'C' )
   {
-    return "\{tag:code\}$seq_argument\{\/tag:code\}";
+    return "\{tag:code\}" . $seq_argument . "\{\/tag:code\}";
   }
   elsif ( $seq_command eq 'I' )
   {
-    return "\{tag:emphasis\}$seq_argument\{\/tag:emphasis\}";
+    return "\{tag:emphasis\}" . $seq_argument . "\{\/tag:emphasis\}";
   }
   elsif ( $seq_command eq 'B' )
   {
-    return "\{tag:strong\}$seq_argument\{\/tag:strong\}";
+    return "\{tag:strong\}" . $seq_argument . "\{\/tag:strong\}";
   }
   elsif ( $seq_command eq 'S' )
   {
@@ -370,11 +365,11 @@ sub interior_sequence
   }
   elsif ( $seq_command eq 'F' )
   {
-    return "\{tag:filename\}$seq_argument\{\/tag:filename\}";
+    return "\{tag:filename\}" . $seq_argument . "\{\/tag:filename\}";
   }
   elsif ( $seq_command eq 'X' )
   {
-    return "\{tag:index\}$seq_argument\{\/tag:index\}";
+    return "\{tag:index\}" . $seq_argument . "\{\/tag:index\}";
   }
   elsif ( $seq_command eq 'L' )
   {
@@ -429,24 +424,37 @@ sub interior_sequence
       $seq_argument = '#' . $sect;
     }
 
-    return "\{tag:link xref='$seq_argument'\}$text\{\/tag:link\}";
+    return "\{tag:link xref='" . $seq_argument . "'\}" . $text .
+        "\{\/tag:link\}";
   }
   elsif ( $seq_command eq 'E' )
   {
     # E<> codes can be numerical!
-    if ( $seq_argument =~ m/^0x([0-9A-Fa-f]{2,4})$/ ||
-         $seq_argument =~ m/^0[0-7]*$/ ||
-         $seq_argument =~ m/^[0-9]*$/ )
+    if ( $seq_argument =~ m/^(0[0-7]+|[0-9]+)$/ )
     {
-      # convert hex and octal values to decimal
-      $seq_argument = oct ( $seq_argument ) if $seq_argument =~ /^0/;
-      $seq_argument = chr ( $seq_argument );
+      # it's octal, convert to decimal!
+      $seq_argument = oct ( $seq_argument ) if $seq_argument =~ m/^0/;
+
+      # convert to hex
+      $seq_argument = sprintf ( '0x%x', $seq_argument ); 
+    }
+
+    if ( $seq_argument =~ m/^0x([0-9A-Fa-f]{2,4})$/ )
+    {
+      # E<> is hex!
+      $seq_argument = "#x" . $1;
     }
     else
     {
-      # probably a HTML escape code
-      $seq_argument = "{tag:escape ref='$seq_argument'}";
+      # if we know about this code then translate it into hex
+      if ( exists $HTML_Escapes { $seq_argument } )
+      {
+        $seq_argument = $HTML_Escapes { $seq_argument };
+      }
     }
+
+    # probably a HTML escape code
+    $seq_argument = "{tag:escape ref='" . $seq_argument . "'}";
 
     return $seq_argument;
   }

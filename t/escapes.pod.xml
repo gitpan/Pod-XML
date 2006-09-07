@@ -9,5 +9,14 @@
 This is a test to see whether or not &quot;special&quot; characters &amp; (or
 should the be &amp;?) &apos;quotable&apos; characters are escaped propery!
 </para>
+<para>
+Aacute should be C1 - &#xC1;
+</para>
+<para>
+HEX &#x201E;, should be &amp;#x201E;
+HEX &#xBB;, should be &amp;#xBB;
+OCTAL &#x3d;, should be &amp;#x3D;
+DECIMAL &#xb5;, should be &amp;#xB5;
+</para>
 </sect1>
 </pod>
