@@ -1,20 +1,20 @@
 package Pod::XML;
 
-# $Id: XML.pm 24 2006-09-07 19:17:17Z matt $
+# $Id: XML.pm 28 2006-09-10 10:03:59Z matt $
 
 use strict;
 use warnings;
-use vars qw(@ISA $VERSION %head2sect %HTML_Escapes);
+use vars qw(@ISA $VERSION);
 
 use Pod::Parser;
 
 @ISA = ( 'Pod::Parser' );
 
-$VERSION = '0.97';
+$VERSION = '0.98';
 
 # I'm not sure why Matt Sergeant did this in this way but I'll leave it for
 # the time being
-%head2sect = (
+my %head2sect = (
   1 => "sect1",
   2 => "sect2",
   3 => "sect3",
@@ -22,76 +22,72 @@ $VERSION = '0.97';
 );
 
 # a hash array of HTML escape codes
-# NOTE that ampersand is not included here as when escaping we MUST do
-# ampersand first!
-%HTML_Escapes = (
-  '<'        =>  'lt',   #   left chevron, less-than
-  '>'        =>  'gt',   #   right chevron, greater-than
-  '"'        =>  'quot', #   double quote
-  "Aacute"   => "#xC1",  #   capital A, acute accent
-  "aacute"   => "#xE1",  #   small a, acute accent
-  "Acirc"    => "#xC2",  #   capital A, circumflex accent
-  "acirc"    => "#xE2",  #   small a, circumflex accent
-  "AElig"    => "#xC6",  #   capital AE diphthong (ligature)
-  "aelig"    => "#xE6",  #   small ae diphthong (ligature)
-  "Agrave"   => "#xC0",  #   capital A, grave accent
-  "agrave"   => "#xE0",  #   small a, grave accent
-  "Aring"    => "#xC5",  #   capital A, ring
-  "aring"    => "#xE5",  #   small a, ring
-  "Atilde"   => "#xC3",  #   capital A, tilde
-  "atilde"   => "#xE3",  #   small a, tilde
-  "Auml"     => "#xC4",  #   capital A, dieresis or umlaut mark
-  "auml"     => "#xE4",  #   small a, dieresis or umlaut mark
-  "Ccedil"   => "#xC7",  #   capital C, cedilla
-  "ccedil"   => "#xE7",  #   small c, cedilla
-  "Eacute"   => "#xC9",  #   capital E, acute accent
-  "eacute"   => "#xE9",  #   small e, acute accent
-  "Ecirc"    => "#xCA",  #   capital E, circumflex accent
-  "ecirc"    => "#xEA",  #   small e, circumflex accent
-  "Egrave"   => "#xC8",  #   capital E, grave accent
-  "egrave"   => "#xE8",  #   small e, grave accent
-  "ETH"      => "#xD0",  #   capital Eth, Icelandic
-  "eth"      => "#xF0",  #   small eth, Icelandic
-  "Euml"     => "#xCB",  #   capital E, dieresis or umlaut mark
-  "euml"     => "#xEB",  #   small e, dieresis or umlaut mark
-  "Iacute"   => "#xCD",  #   capital I, acute accent
-  "iacute"   => "#xED",  #   small i, acute accent
-  "Icirc"    => "#xCE",  #   capital I, circumflex accent
-  "icirc"    => "#xEE",  #   small i, circumflex accent
-  "Igrave"   => "#xCD",  #   capital I, grave accent
-  "igrave"   => "#xED",  #   small i, grave accent
-  "Iuml"     => "#xCF",  #   capital I, dieresis or umlaut mark
-  "iuml"     => "#xEF",  #   small i, dieresis or umlaut mark
-  "Ntilde"   => "#xD1",  #   capital N, tilde
-  "ntilde"   => "#xF1",  #   small n, tilde
-  "Oacute"   => "#xD3",  #   capital O, acute accent
-  "oacute"   => "#xF3",  #   small o, acute accent
-  "Ocirc"    => "#xD4",  #   capital O, circumflex accent
-  "ocirc"    => "#xF4",  #   small o, circumflex accent
-  "Ograve"   => "#xD2",  #   capital O, grave accent
-  "ograve"   => "#xF2",  #   small o, grave accent
-  "Oslash"   => "#xD8",  #   capital O, slash
-  "oslash"   => "#xF8",  #   small o, slash
-  "Otilde"   => "#xD5",  #   capital O, tilde
-  "otilde"   => "#xF5",  #   small o, tilde
-  "Ouml"     => "#xD6",  #   capital O, dieresis or umlaut mark
-  "ouml"     => "#xF6",  #   small o, dieresis or umlaut mark
-  "szlig"    => "#xDF",  #   small sharp s, German (sz ligature)
-  "THORN"    => "#xDE",  #   capital THORN, Icelandic
-  "thorn"    => "#xFE",  #   small thorn, Icelandic
-  "Uacute"   => "#xDA",  #   capital U, acute accent
-  "uacute"   => "#xFA",  #   small u, acute accent
-  "Ucirc"    => "#xDB",  #   capital U, circumflex accent
-  "ucirc"    => "#xFB",  #   small u, circumflex accent
-  "Ugrave"   => "#xD9",  #   capital U, grave accent
-  "ugrave"   => "#xF9",  #   small u, grave accent
-  "Uuml"     => "#xDC",  #   capital U, dieresis or umlaut mark
-  "uuml"     => "#xFC",  #   small u, dieresis or umlaut mark
-  "Yacute"   => "#xDD",  #   capital Y, acute accent
-  "yacute"   => "#xFD",  #   small y, acute accent
-  "yuml"     => "#xFF",  #   small y, dieresis or umlaut mark
-  "lchevron" => "#xAB",  #   left chevron (double less than)
-  "rchevron" => "#xBB",  #   right chevron (double greater than)
+my %HTML_Escapes = (
+  "apos"      => "#x27",  # apostrophe
+  "Aacute"    => "#xC1",  # capital A, acute accent
+  "aacute"    => "#xE1",  # small a, acute accent
+  "Acirc"     => "#xC2",  # capital A, circumflex accent
+  "acirc"     => "#xE2",  # small a, circumflex accent
+  "AElig"     => "#xC6",  # capital AE diphthong (ligature)
+  "aelig"     => "#xE6",  # small ae diphthong (ligature)
+  "Agrave"    => "#xC0",  # capital A, grave accent
+  "agrave"    => "#xE0",  # small a, grave accent
+  "Aring"     => "#xC5",  # capital A, ring
+  "aring"     => "#xE5",  # small a, ring
+  "Atilde"    => "#xC3",  # capital A, tilde
+  "atilde"    => "#xE3",  # small a, tilde
+  "Auml"      => "#xC4",  # capital A, dieresis or umlaut mark
+  "auml"      => "#xE4",  # small a, dieresis or umlaut mark
+  "Ccedil"    => "#xC7",  # capital C, cedilla
+  "ccedil"    => "#xE7",  # small c, cedilla
+  "Eacute"    => "#xC9",  # capital E, acute accent
+  "eacute"    => "#xE9",  # small e, acute accent
+  "Ecirc"     => "#xCA",  # capital E, circumflex accent
+  "ecirc"     => "#xEA",  # small e, circumflex accent
+  "Egrave"    => "#xC8",  # capital E, grave accent
+  "egrave"    => "#xE8",  # small e, grave accent
+  "ETH"       => "#xD0",  # capital Eth, Icelandic
+  "eth"       => "#xF0",  # small eth, Icelandic
+  "Euml"      => "#xCB",  # capital E, dieresis or umlaut mark
+  "euml"      => "#xEB",  # small e, dieresis or umlaut mark
+  "Iacute"    => "#xCD",  # capital I, acute accent
+  "iacute"    => "#xED",  # small i, acute accent
+  "Icirc"     => "#xCE",  # capital I, circumflex accent
+  "icirc"     => "#xEE",  # small i, circumflex accent
+  "Igrave"    => "#xCD",  # capital I, grave accent
+  "igrave"    => "#xED",  # small i, grave accent
+  "Iuml"      => "#xCF",  # capital I, dieresis or umlaut mark
+  "iuml"      => "#xEF",  # small i, dieresis or umlaut mark
+  "Ntilde"    => "#xD1",  # capital N, tilde
+  "ntilde"    => "#xF1",  # small n, tilde
+  "Oacute"    => "#xD3",  # capital O, acute accent
+  "oacute"    => "#xF3",  # small o, acute accent
+  "Ocirc"     => "#xD4",  # capital O, circumflex accent
+  "ocirc"     => "#xF4",  # small o, circumflex accent
+  "Ograve"    => "#xD2",  # capital O, grave accent
+  "ograve"    => "#xF2",  # small o, grave accent
+  "Oslash"    => "#xD8",  # capital O, slash
+  "oslash"    => "#xF8",  # small o, slash
+  "Otilde"    => "#xD5",  # capital O, tilde
+  "otilde"    => "#xF5",  # small o, tilde
+  "Ouml"      => "#xD6",  # capital O, dieresis or umlaut mark
+  "ouml"      => "#xF6",  # small o, dieresis or umlaut mark
+  "szlig"     => "#xDF",  # small sharp s, German (sz ligature)
+  "THORN"     => "#xDE",  # capital THORN, Icelandic
+  "thorn"     => "#xFE",  # small thorn, Icelandic
+  "Uacute"    => "#xDA",  # capital U, acute accent
+  "uacute"    => "#xFA",  # small u, acute accent
+  "Ucirc"     => "#xDB",  # capital U, circumflex accent
+  "ucirc"     => "#xFB",  # small u, circumflex accent
+  "Ugrave"    => "#xD9",  # capital U, grave accent
+  "ugrave"    => "#xF9",  # small u, grave accent
+  "Uuml"      => "#xDC",  # capital U, dieresis or umlaut mark
+  "uuml"      => "#xFC",  # small u, dieresis or umlaut mark
+  "Yacute"    => "#xDD",  # capital Y, acute accent
+  "yacute"    => "#xFD",  # small y, acute accent
+  "yuml"      => "#xFF",  # small y, dieresis or umlaut mark
+  "lchevron"  => "#xAB",  # left chevron (double less than)
+  "rchevron"  => "#xBB",  # right chevron (double greater than)
 );
 
 sub html_escape
@@ -101,26 +97,43 @@ sub html_escape
   # ampersand MUST be done first!
   $text =~ s/&/\&amp;/g;
 
+  # handle < and > too
+  $text =~ s/</\&lt;/g;
+  $text =~ s/>/\&gt;/g;
+
   # convert other {tag:...} markers
   $text =~ s/{tag:escape ref='([^']*)'}/\&$1;/g;
 
   return $text;
 }
 
+sub finalise_output
+{
+  my $parser = shift;
+
+  # put something pretty together
+  $parser->{xml_string} =
+      "<?xml version='1.0' encoding='iso-8859-1'?>\n" .
+      "<pod xmlns=\"http://axkit.org/ns/2000/pod2xml\">\n" .
+      "<head>\n" .
+      "<title>" . html_escape ( $parser->{title} ) . "</title>\n" .
+      "</head>\n" .
+      $parser->{xml_string} .
+      "</pod>\n";
+
+  if ( ! $parser->{send_to_string} )
+  {
+    my $fh = $parser->output_handle ();
+
+    print $fh $parser->{xml_string};
+  }
+}
+
 sub xml_output
 {
   my ( $parser, @strings ) = @_;
   
-  if ( $parser->{send_to_string} )
-  {
-    $parser->{xml_string} .= join ( '', @strings );
-  }
-  else
-  {
-    my $fh = $parser->output_handle ();
-
-    print $fh @strings;
-  }
+  $parser->{xml_string} .= join ( '', @strings );
 }
 
 sub begin_pod
@@ -130,18 +143,15 @@ sub begin_pod
   $parser->{headlevel} = 0;
   $parser->{seentitle} = 0;
   $parser->{closeitem} = 0;
-  $parser->{waitingfortitle} = 0;
-
-  $parser->xml_output (<<EOT);
-<?xml version='1.0' encoding='iso-8859-1'?>
-<pod xmlns="http://axkit.org/ns/2000/pod2xml">
-EOT
+  $parser->{in_begin_block} = 0;
+  $parser->{this_is_name} = 0;
+  $parser->{title} = '';
+  $parser->{xml_string} = '';
 }
 
 sub end_pod
 {
   my ( $parser ) = @_;
-  my $fh = $parser->output_handle ();
 
   while ( $parser->{headlevel} )
   {
@@ -149,15 +159,12 @@ sub end_pod
         ">\n" );
   }
 
-  $parser->xml_output(<<EOT);
-</pod>
-EOT
+  $parser->finalise_output;
 }
 
 sub command
 {
   my ( $parser, $command, $paragraph ) = @_;
-  my $fh = $parser->output_handle ();
 
   $paragraph =~ s/\s*$//;
   $paragraph =~ s/^\s*//;
@@ -168,78 +175,82 @@ sub command
   $paragraph =~ s/\{(\/?)tag:(.*?)\}/<$1$2>/g;
   $paragraph =~ s/\{code:(\d+)\}/&#$1/g;
 
-  if ( $command =~ /^head(\d+)/ )
+  if ( $parser->{in_begin_block} == 0 )
   {
-    my $headlevel = $1;
-    
-    if ( ! $parser->{title} )
+    if ( $command =~ /^head(\d+)/ )
     {
-      $parser->xml_output ( "<head>\n\t<title>" );
+      my $headlevel = $1;
 
-      return if $paragraph eq 'NAME';
-      
-      $parser->{title} = $paragraph;
-      $parser->xml_output ( $paragraph, "</title>\n</head>\n" );
+      # we should use "NAME" as the title
+      $parser->{this_is_name}++
+        if ( $paragraph =~ m/^name$/i && $parser->{this_is_name} == 0 );
 
-      return;
-    }
-
-    if ( $headlevel <= $parser->{headlevel} )
-    {
-      while ( $headlevel <= $parser->{headlevel} )
+      if ( $headlevel <= $parser->{headlevel} )
       {
-        $parser->xml_output ( "</", $head2sect { $parser->{headlevel}-- },
+        while ( $headlevel <= $parser->{headlevel} )
+        {
+          $parser->xml_output ( "</", $head2sect { $parser->{headlevel}-- },
+              ">\n" );
+        }
+      }
+
+      while ( $headlevel > ( $parser->{headlevel} + 1 ) )
+      {
+        $parser->xml_output ( "<", $head2sect { ++$parser->{headlevel} },
             ">\n" );
       }
-    }
 
-    while ( $headlevel > ( $parser->{headlevel} + 1 ) )
+      $parser->{headlevel} = $headlevel;
+      $parser->xml_output ( "<", $head2sect { $headlevel }, ">\n",
+          "<title>", $paragraph, "</title>\n" );
+    }
+    elsif ( $command eq "over" )
     {
-      $parser->xml_output ( "<", $head2sect { ++$parser->{headlevel} },
-          ">\n" );
-    }
+      if ( $parser->{closeitem} )
+      {
+        $parser->xml_output ( "</item>\n" );
+        $parser->{closeitem} = 0;
+      }
 
-    $parser->{headlevel} = $headlevel;
-    $parser->xml_output ( "<", $head2sect { $headlevel }, ">\n",
-        "<title>", $paragraph, "</title>\n" );
+      $parser->xml_output ( "<list>\n" );
+    }
+    elsif ( $command eq "back" )
+    {
+      if ( $parser->{closeitem} )
+      {
+        $parser->xml_output ( "</item>\n" );
+        $parser->{closeitem} = 0;
+      }
+
+      $parser->xml_output ( "</list>\n" );
+    }
+    elsif ( $command eq "item" )
+    {
+      if ( $parser->{closeitem} )
+      {
+        $parser->xml_output ( "</item>\n" );
+        $parser->{closeitem} = 0;
+      }
+
+      $parser->xml_output ( "<item>" );
+
+      if ( $paragraph ne '*' )
+      {
+        $paragraph =~ s/^\*\s+//;
+        $parser->xml_output ( "<itemtext>", $paragraph, "</itemtext>\n" );
+      }
+
+      $parser->{closeitem}++;
+    }
+    elsif ( $command eq 'begin' )
+    {
+      # this is to strip out =begin ... =end blocks, which aren't generally POD
+      $parser->{in_begin_block} = 1;
+    }
   }
-  elsif ( $command eq "over" )
+  elsif ( $command eq 'end' )
   {
-    if ( $parser->{closeitem} )
-    {
-      $parser->xml_output ( "</item>\n" );
-      $parser->{closeitem} = 0;
-    }
-
-    $parser->xml_output ( "<list>\n" );
-  }
-  elsif ( $command eq "back" )
-  {
-    if ( $parser->{closeitem} )
-    {
-      $parser->xml_output ( "</item>\n" );
-      $parser->{closeitem} = 0;
-    }
-
-    $parser->xml_output ( "</list>\n" );
-  }
-  elsif ( $command eq "item" )
-  {
-    if ( $parser->{closeitem} )
-    {
-      $parser->xml_output ( "</item>\n" );
-      $parser->{closeitem} = 0;
-    }
-
-    $parser->xml_output ( "<item>" );
-
-    if ( $paragraph ne '*' )
-    {
-      $paragraph =~ s/^\*\s+//;
-      $parser->xml_output ( "<itemtext>", $paragraph, "</itemtext>\n" );
-    }
-
-    $parser->{closeitem}++;
+    $parser->{in_begin_block} = 0;
   }
 }
 
@@ -247,7 +258,7 @@ sub verbatim
 {
   my ( $parser, $paragraph ) = @_;
 
-  my $fh = $parser->output_handle ();
+  return if $parser->{in_begin_block};
 
   if ( $paragraph =~ s/^(\s*)// )
   {
@@ -259,6 +270,16 @@ sub verbatim
   
     $paragraph =~ s/^$indent//mg; # un-indent
     $paragraph =~ s/\]\]>/\]\]>\]\]&gt;<!\[CDATA\[/g;
+
+    # is this the title block?
+    if ( $parser->{this_is_name} == 1 )
+    {
+    # increment, rather than setting back to zero; this way we can ensure
+    # the first NAME is used, but not proceeding ones
+      $parser->{this_is_name}++;
+      $parser->{title} = "<![CDATA[\n" . $paragraph . "\n]]>";
+    }
+
     $parser->xml_output ( "<verbatim><![CDATA[\n", $paragraph,
         "\n]]></verbatim>\n" );
   }
@@ -267,7 +288,8 @@ sub verbatim
 sub textblock
 {
   my ( $parser, $paragraph, $line_num ) = @_;
-  my $fh = $parser->output_handle ();
+
+  return if $parser->{in_begin_block};
 
   $paragraph =~ s/^\s*//;
   $paragraph =~ s/\s*$//;
@@ -279,22 +301,22 @@ sub textblock
   $text =~ s/\{(\/?)tag:(.*?)\}/<$1$2>/g;
   $text =~ s/\{code:(\d+)\}/&#$1/g;
 
-  if ( ! $parser->{title} )
+  if ( $parser->{this_is_name} == 1 )
   {
-    $parser->{title} = $text;
-    $parser->xml_output ( $text, "</title>\n</head>\n" );
+    # increment, rather than setting back to zero; this way we can ensure the
+    # first NAME is used, but not proceeding ones
+    $parser->{this_is_name}++;
+    $parser->{title} = $paragraph;
   }
-  else
-  {
-    if ( $parser->{headlevel} == 0 )
-    {
-      $parser->xml_output ( "<sect1>\n<title>", $parser->{title},
-          "</title>\n" );
-      $parser->{headlevel}++;
-    }
 
-    $parser->xml_output ( "<para>\n", $text, "\n</para>\n" );
+  if ( $parser->{headlevel} == 0 )
+  {
+    $parser->xml_output ( "<sect1>\n<title>", $parser->{title},
+        "</title>\n" );
+    $parser->{headlevel}++;
   }
+
+  $parser->xml_output ( "<para>\n", $text, "\n</para>\n" );
 }
 
 sub uri_find
@@ -386,6 +408,7 @@ sub interior_sequence
     # Additionally, there can also be;
     #  L<scheme:...>
     # which SHOULD NOT be prepended label|
+    $seq_argument =~ s/[\r\n]/ /g;
     my $text = $seq_argument;
 
     if ( $seq_argument =~ /^([^|]+)\|(.*)$/ )
@@ -556,3 +579,5 @@ This is free software, you may use it and distribute it under the
 same terms as Perl itself.
 
 =cut
+
+# vim:ts=2:sw=2:et
