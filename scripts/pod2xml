@@ -10,7 +10,7 @@ pod2xml - convert POD to XML
 
 =head1 SYNOPSIS
 
-  pod2xml [infile [outfile]]
+  pod2xml [--encoding foobar] [infile [outfile]]
 
 =head1 DESCRIPTION
 
@@ -24,8 +24,14 @@ L<Pod::Parser>, L<Pod::XML>
 =cut
 
 use Pod::XML;
+use Getopt::Long;
 
-my $parser = Pod::XML->new ();
+my $encoding;
+GetOptions ( "encoding=s" => \$encoding );
+
+my %options;
+$options { 'Encoding' } = $encoding if $encoding;
+my $parser = Pod::XML->new ( %options );
 
 if ( @ARGV )
 {

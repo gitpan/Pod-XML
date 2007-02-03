@@ -1,6 +1,6 @@
 package Pod::XML;
 
-# $Id: XML.pm 28 2006-09-10 10:03:59Z matt $
+# $Id: XML.pm 30 2007-02-03 16:50:07Z matt $
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ use Pod::Parser;
 
 @ISA = ( 'Pod::Parser' );
 
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 # I'm not sure why Matt Sergeant did this in this way but I'll leave it for
 # the time being
@@ -113,13 +113,20 @@ sub finalise_output
 
   # put something pretty together
   $parser->{xml_string} =
-      "<?xml version='1.0' encoding='iso-8859-1'?>\n" .
+      "<?xml version='1.0' encoding='" .
+      ( $parser->{Encoding} || "iso-8859-1" ) . "'?>\n" .
       "<pod xmlns=\"http://axkit.org/ns/2000/pod2xml\">\n" .
       "<head>\n" .
       "<title>" . html_escape ( $parser->{title} ) . "</title>\n" .
       "</head>\n" .
       $parser->{xml_string} .
       "</pod>\n";
+
+  if ( $parser->{Encoding} )
+  {
+    my $tmp = Encode::encode ( $parser->{Encoding}, $parser->{xml_string} );
+    $parser->{xml_string} = $tmp;
+  }
 
   if ( ! $parser->{send_to_string} )
   {
@@ -139,6 +146,26 @@ sub xml_output
 sub begin_pod
 {
   my ( $parser ) = @_;
+
+  if ( $parser->{Encoding} )
+  {
+    # can we use the Encode module?
+    eval
+    {
+      require Encode;
+    };
+
+    die ( "Need Encode module to specify specific output encoding - " . $@ )
+      if ( $@ );
+
+    # make sure we can encode to the specific encoding
+    eval
+    {
+      Encode::encode ( $parser->{Encoding}, "" );
+    };
+
+    die ( "Encoding issue - " . $@ ) if ( $@ );
+  }
 
   $parser->{headlevel} = 0;
   $parser->{seentitle} = 0;
@@ -501,6 +528,16 @@ Pod::XML - Module to convert POD to XML
 
 This module uses Pod::Parser to parse POD and generates XML from the
 resulting parse stream. It uses its own format, described below.
+
+=head1 OPTIONS
+
+=over 2
+
+=item Encoding
+
+Specify the output encoding of the XML file. Requires Encode Perl module.
+
+=back
 
 =head1 XML FORMAT
 

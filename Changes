@@ -1,5 +1,9 @@
 Revision history for Perl extension Pod::XML.
 
+Say Feb 3 2007
+  - Added Encoding constructor option to allow specifying the file encoding
+  - Released 0.99
+
 Sat May 27 2006
   - Unit tests now use Test::More and Test::File::Contents.
   - Moved unit tests to use File::Basename and dirname ( $0 ) to ensure we're
